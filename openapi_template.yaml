@@ -1,0 +1,1250 @@
+openapi: 3.0.2
+info:
+  title: API Template  
+  contact:
+    name: API Team
+    email: name.surname@domain.com
+  description: |-
+    This is an generic API Definition Template with Collections, Resources and Controllers.
+    
+    Mandatory Headers and HTTP Status Codes are already added to the YAML file as well as a sample of
+    each of the operations than can be implemented. 
+    
+    [Please read the guidelines for API design](https://domain.com/bestpractices-guide) 
+    
+    Designed by Claudio Heidel
+  version: 1.0.0
+security:
+- {}
+servers:
+- url: https://myhost/v1
+tags:
+- name: Resources Enquery
+- name: Resources Creation
+- name: Resources Update
+- name: Resources Deletion
+- name: Resources Controllers
+
+paths:
+  /collections:
+    get:
+      tags:
+      - Resources Enquery
+      summary: Service to fetch the list of resources.
+      description: This service fetches the list of the resources. Some QueryString
+        Parameters can be added to filter the results. In the response there will
+        be a subset of the attributes of the Business Data Schema, a link to retrieve
+        the complete details of each of the resources in the list and the pagination
+        links.
+      operationId: resourceListEnquiry
+      parameters:
+      - name: correlationId
+        in: header
+        description: Correlation Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'corid-001'
+        
+      - name: progressId
+        in: header
+        description: Progress Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'progid-001'
+      - name: queryStringParameter
+        in: query
+        description: Description of the QueryString Parameter and explanation of howit will affect the filtering of the results.
+        schema:
+          maxLength: 200
+          type: string
+          pattern: ^[A-Za-z0-9-]{0,200}$
+          default: 'queryStringParameterValue'
+        example: 'queryStringParameterValue'
+      - name: limit
+        in: query
+        description: It indicates the amount of elements so be retrieved by page.
+          It is an optional value, if it is not informed, the API will retrieve the
+          default amount of elements.
+        schema:
+          type: integer
+          format: int32
+          minimum: 0
+          maximum: 2147483647
+          default: 20
+        example: 15
+      - name: offset
+        in: query
+        description: It indicates the amount of elements so be skipped in the pagination.
+        schema:
+          type: integer
+          format: int32
+          default: 20
+          minimum: 0
+          maximum: 2147483647
+        example: 15
+      responses:
+        '200':
+          description: OK - The list of resources was retrieved successfully and it
+            is included in the body of the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resourceListEnquiryResponse'
+        '204':
+          description: No Content - The service was executed successfully but there
+            are no resources to show - Empty Body
+        '400':
+          description: Bad Request - If the resource is misspelled (badly constructed
+            URI) / If the data in the request is not correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '401':
+          description: Unauthorized - If the API requires subscription and the client
+            does not have it / If there is a problem with the User Credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '403':
+          description: Forbidden - If OAuth Access Token is invalid / If the user
+            did not pass the operational security.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '500':
+          description: Internal Server Error - Use it as a General System Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '503':
+          description: Service Unavailable - Use it to report the Specific Errors
+            that the server suffers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '504':
+          description: Gateway Timeout - Use it to report a Timeout occurred on the
+            server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/errorObject'
+                        
+    post:
+      tags:
+      - Resources Creation
+      summary: Service to create a new resource in the collection.
+      description: This service creates a new resource in the collection. The payload
+        in the request body must contain all the mandatory attributes defined for
+        the Resource object (Bussiness Data Schema). The response will contain the
+        resource identifier and the link to retrieve the complete details of the resource.
+      operationId: resourceCreationEnquiry
+      parameters:
+      - name: correlationId
+        in: header
+        description: Correlation Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'corid-001'
+      - name: progressId
+        in: header
+        description: Progress Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'progid-001'
+      requestBody:
+        description: Payload of the Resource that wants to be created (It must contain
+          all the mandatory attributes defined for the Resource object (Bussiness
+          Data Schema))
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/resourceUpdateAndCreationEnquiryRequest'
+        required: true
+      responses:
+        '201':
+          description: Created OK - The resource was created successfully and its identifier
+            and link to the details are included in the body of the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resourceCreationEnquiryResponse'
+        '400':
+          description: Bad Request - If the resource is misspelled (badly constructed
+            URI) / If the data in the request is not correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '401':
+          description: Unauthorized - If the API requires subscription and the client
+            does not have it / If there is a problem with the User Credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '403':
+          description: Forbidden - If OAuth Access Token is invalid / If the user
+            did not pass the operational security.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+                
+        '500':
+          description: Internal Server Error - Use it as a General System Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '503':
+          description: Service Unavailable - Use it to report the Specific Errors
+            that the server suffers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '504':
+          description: Gateway Timeout - Use it to report a Timeout occurred on the
+            server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/errorObject'
+
+  /collections/{resourceId}:
+    get:
+      tags:
+      - Resources Enquery
+      summary: Service to retrieve the details of a particular resource.
+      description: This service retrieves the details of a particular resource. The
+        payload in the response body must contain all the attributes defined for the
+        Resource object (Bussiness Data Schema).
+      operationId: resourceDetailsEnquiry
+      parameters:
+      - name: correlationId
+        in: header
+        description: Correlation Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'corid-001'
+      - name: progressId
+        in: header
+        description: Progress Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'progid-001'
+      - name: resourceId
+        in: path
+        description: Unique identifier of the resource.
+        required: true
+        schema:
+          type: string
+          maxLength: 20
+          pattern: ^[A-Za-z0-9-]{0,20}$
+        example: 'resid-0123456789'
+      responses:
+        '200':
+          description: OK - The resource details were retrieved successfully and they
+            are included in the body of the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resourceDetailsEnquiryResponse'
+        '400':
+          description: Bad Request - If the resource is misspelled (badly constructed
+            URI) / If the data in the request is not correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '401':
+          description: Unauthorized - If the API requires subscription and the client
+            does not have it / If there is a problem with the User Credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '403':
+          description: Forbidden - If OAuth Access Token is invalid / If the user
+            did not pass the operational security.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '404':
+          description: Not Found - If Resource ID not found or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '500':
+          description: Internal Server Error - Use it as a General System Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '503':
+          description: Service Unavailable - Use it to report the Specific Errors
+            that the server suffers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '504':
+          description: Gateway Timeout - Use it to report a Timeout occurred on the
+            server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/errorObject'
+                
+    put:
+      tags:
+      - Resources Update
+      summary: Service to completely update an existing resource or create a new one
+        (if the informed resourceId did not exist).
+      description: This service completely updates an existing resource or creates
+        a new one (if the informed resourceId did not exist) in the collection. The
+        payload in the request body must contain all the mandatory attributes defined
+        for the Resource object (Bussiness Data Schema). If the informed resourceId
+        did not exist and it results in the creation of a new Resource, the response
+        will contain the resource identifier and the link to retrieve the complete
+        details of the resource.
+      operationId: resourceCompleteUpdateEnquiry
+      parameters:
+      - name: correlationId
+        in: header
+        description: Correlation Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'corid-001'
+      - name: progressId
+        in: header
+        description: Progress Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'progid-001'
+      - name: resourceId
+        in: path
+        description: Unique identifier of the resource.
+        required: true
+        schema:
+          type: string
+          maxLength: 20
+          pattern: ^[A-Za-z0-9-]{0,20}$
+        example: 'resid-0123456789'
+      requestBody:
+        description: Payload of the Resource that wants to be completely updated or
+          created (if the informed resourceId did not exist). It must contain all
+          the mandatory attributes defined for the Resource object (Bussiness Data
+          Schema)
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/resourceUpdateAndCreationEnquiryRequest'
+        required: true
+      responses:
+        '200':
+          description: Update OK - The resource was updated successfully and its identifier and link to the details are included in the body of the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resourceCreationEnquiryResponse'
+        '201':
+          description: Created OK - The informed resourceId did not exist, so the resource
+            was created successfully and its identifier and link to the details are
+            included in the body of the response.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resourceCreationEnquiryResponse'
+        '204':
+          description: No Content - The resource was successfully updated - Empty
+            Body
+        '400':
+          description: Bad Request - If the resource is misspelled (badly constructed
+            URI) / If the data in the request is not correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '401':
+          description: Unauthorized - If the API requires subscription and the client
+            does not have it / If there is a problem with the User Credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '403':
+          description: Forbidden - If OAuth Access Token is invalid / If the user
+            did not pass the operational security.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '500':
+          description: Internal Server Error - Use it as a General System Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '503':
+          description: Service Unavailable - Use it to report the Specific Errors
+            that the server suffers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '504':
+          description: Gateway Timeout - Use it to report a Timeout occurred on the
+            server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/errorObject'
+                
+    delete:
+      tags:
+      - Resources Deletion
+      summary: Service to delete an existing resource.
+      description: This service deletes an existing resource. The response will contain
+        any warning information regarding the deletion.
+      operationId: resourceDeleteEnquiry
+      parameters:
+      - name: correlationId
+        in: header
+        description: Correlation Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'corid-001'
+      - name: progressId
+        in: header
+        description: Progress Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'progid-001'
+      - name: resourceId
+        in: path
+        description: Unique identifier of the resource.
+        required: true
+        schema:
+          type: string
+          maxLength: 20
+          pattern: ^[A-Za-z0-9-]{0,20}$
+        example: 'resid-0123456789'
+      responses:
+        '200':
+          description: OK - The resource was deleted successfully but there is adittional
+            information (WARNING) to show to the consumer through the body of the
+            response (For example, orphan resources).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resourceDeleteEnquiryResponse'
+        '204':
+          description: No Content - The resource was successfully deleted - Empty
+            Body
+        '400':
+          description: Bad Request - If the resource is misspelled (badly constructed
+            URI) / If the data in the request is not correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '401':
+          description: Unauthorized - If the API requires subscription and the client
+            does not have it / If there is a problem with the User Credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '403':
+          description: Forbidden - If OAuth Access Token is invalid / If the user
+            did not pass the operational security.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '404':
+          description: Not Found - If Resource ID not found or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '409':
+          description: Conflict - If there is a conflict why the Resource cannot be
+            deleted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '500':
+          description: Internal Server Error - Use it as a General System Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '503':
+          description: Service Unavailable - Use it to report the Specific Errors
+            that the server suffers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '504':
+          description: Gateway Timeout - Use it to report a Timeout occurred on the
+            server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/errorObject'
+    patch:
+      tags:
+      - Resources Update
+      summary: Service to partially update an existing resource.
+      description: This service partially updates an existing resource. The payload
+        in the request body will only contain the attributes defined in the Resource
+        object (Bussiness Data Schema) that are requested to be updated.
+      operationId: resourceUpdateEnquiry
+      parameters:
+      - name: correlationId
+        in: header
+        description: Correlation Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'corid-001'
+      - name: progressId
+        in: header
+        description: Progress Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'progid-001'
+      - name: resourceId
+        in: path
+        description: Unique identifier of the resource.
+        required: true
+        schema:
+          type: string
+          maxLength: 20
+          pattern: ^[A-Za-z0-9-]{0,20}$
+        example: 'resid-0123456789'
+      requestBody:
+        description: Payload of the Resource that wants to be updated. It will only
+          contain the attributes defined in the Resource object (Bussiness Data Schema)
+          that are requested to be updated
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/resourceUpdateAndCreationEnquiryRequest'
+        required: true
+      responses:
+        '204':
+          description: No Content - The resource was successfully updated - Empty
+            Body
+        '400':
+          description: Bad Request - If the resource is misspelled (badly constructed
+            URI) / If the data in the request is not correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '401':
+          description: Unauthorized - If the API requires subscription and the client
+            does not have it / If there is a problem with the User Credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '403':
+          description: Forbidden - If OAuth Access Token is invalid / If the user
+            did not pass the operational security.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '404':
+          description: Not Found - If Resource ID not found or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+                
+                
+                
+        '500':
+          description: Internal Server Error - Use it as a General System Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '503':
+          description: Service Unavailable - Use it to report the Specific Errors
+            that the server suffers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '504':
+          description: Gateway Timeout - Use it to report a Timeout occurred on the
+            server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/errorObject'
+                
+  /collections/{resourceId}/controller:
+    post:
+      tags:
+      - Resources Controllers
+      summary: Service to perform a non CRUD action on an existing resource.
+      description: This service will perform a non CRUD action on an existing resource
+        (e.g. Validation of an operation, resent of information, etc.). The response
+        will contain the result of the action (It could be a Success (e.g. Validation
+        succeed), a Functional error (e.g. Validation failed), some warning information
+        or the entity status).
+      operationId: resourceControllerEnquiry
+      parameters:
+      - name: correlationId
+        in: header
+        description: Correlation Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'corid-001'
+      - name: progressId
+        in: header
+        description: Progress Identifier
+        schema:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]{0,10}$
+        example: 'progid-001'
+      - name: resourceId
+        in: path
+        description: Unique identifier of the resource.
+        required: true
+        schema:
+          type: string
+          maxLength: 20
+          pattern: ^[A-Za-z0-9-]{0,20}$
+        example: 'resid-0123456789'
+      responses:
+        '200':
+          description: OK - The action was successfully performed and its result will
+            be included in the body of the response (It could be a Success (e.g. Validation
+            succeed), a Functional error (e.g. Validation failed), some warning information
+            or the entity status).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/resourceControllerEnquiryResponse'
+        '204':
+          description: No Content - The action was successfully performed - Empty
+            Body
+        '400':
+          description: Bad Request - If the resource is misspelled (badly constructed
+            URI) / If the data in the request is not correct.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '401':
+          description: Unauthorized - If the API requires subscription and the client
+            does not have it / If there is a problem with the User Credentials.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '403':
+          description: Forbidden - If OAuth Access Token is invalid / If the user
+            did not pass the operational security.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '404':
+          description: Not Found - If Resource ID not found or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '500':
+          description: Internal Server Error - Use it as a General System Error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '503':
+          description: Service Unavailable - Use it to report the Specific Errors
+            that the server suffers.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        '504':
+          description: Gateway Timeout - Use it to report a Timeout occurred on the
+            server.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorObject'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+             schema:
+              $ref: '#/components/schemas/errorObject'
+
+components:
+
+  schemas:
+
+    typeDate:
+      title: typeDate
+      type: string
+      description: Reusable Date type definition.
+      format: "YYYY-MM-DD"
+      example: 2019-11-30
+      pattern: ^([0-9]{4}-[0-1]{1}[0-9]{1}-[0-3]{1}[0-9]{1})
+      maxLength: 10
+      
+    typeTime:
+      title: typeTime
+      type: string
+      description: Reusable Time type definition.
+      format: "hh:mm:ssZ"
+      pattern: ^([0-5]{1}[0-9]{1}:[0-5]{1}[0-9]{1}:[0-5]{1}[0-9]{1}Z)
+      example: 16:22:40Z
+      maxLength: 9
+    
+    typeDateTime:
+      title: typeDateTime
+      type: string
+      description: Reusable Date-Time type definition.
+      format: "YYYY-MM-DDThh:mm:ssZ"
+      pattern: ^([0-9]{4}-[0-1]{1}[0-9]{1}-[0-3]{1}[0-9]{1}T[0-5]{1}[0-9]{1}:[0-5]{1}[0-9]{1}:[0-5]{1}[0-9]{1}Z)
+      example: 2019-11-30T16:22:40Z
+      maxLength: 20
+
+    typeEmail:
+      title: typeEmail
+      type: string
+      description: Reusable Email type definition.
+      maxLength: 100
+      pattern: (?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])
+      example: name.surname@domain.com
+
+    typeURL:
+      title: typeURL
+      type: string
+      maxLength: 2000
+      pattern: ^[A-Za-z0-9/+:.#?\-_&=]
+      description: Reusable URL type definition.
+      format: uri
+      example: https://domain.com
+  
+    resourceListEnquiryResponse:
+      title: resourceListEnquiryResponse
+      type: object
+      additionalProperties: false
+      properties:
+        data:
+          type: array
+          maxItems: 100
+          description: Subset of attributes for each of the retrieved resources.
+          items:
+            type: object
+            additionalProperties: false
+            properties:
+              id:
+                type: string
+                maxLength: 20
+                pattern: ^[A-Za-z0-9-]
+                description: Resource identifier.
+                example: r3s0urc31d01
+              attributeOne:
+                type: string
+                maxLength: 100
+                pattern: ^[A-Za-z0-9]
+                description: Attribute to describe the resource.
+                example: attributeValue
+              links:
+                $ref: '#/components/schemas/selfLinkObject'
+        pagination:
+          $ref: '#/components/schemas/paginationLinksObject'
+      description: List of the retrieved resources + Pagination information
+    resourceUpdateAndCreationEnquiryRequest:
+      title: resourceCompleteUpdateAndCreationEnquiryRequest
+      type: object
+      additionalProperties: false
+      properties:
+        attributeOne:
+          type: string
+          maxLength: 20
+          pattern: ^[A-Za-z0-9-]
+          description: Description of the attributeOne.
+          example: attributeOneValue
+        attributeFive:
+          $ref: '#/components/schemas/typeEmail'
+        attributeSeven:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Description of the attributeSeven.
+          format: float
+          example: 50.05
+        attributeEight:
+          type: integer
+          description: Description of the attributeEight.
+          format: int32
+          minimum: 0
+          maximum: 1000
+          example: 50
+        isAttributeNine:
+          type: boolean
+          description: Description of the isAttributeNine.
+          example: true
+        attributeTenArray:
+          type: array
+          maxItems: 100
+          description: Description of the attributeTenArray.
+          example:
+          - attributeTenValueOne
+          - attributeTenValueTwo
+          items:
+            type: string
+            maxLength: 50
+            pattern: ^[A-Za-z0-9-]
+            description: Description of the attributeTenArray.
+            example: attributeTenValue
+        attributeElevenAmount:
+          $ref: '#/components/schemas/amountObject'
+      description: Resource Object with all the relevant information for the object
+        to be created / partially update / completelly updated.
+      example:
+        attributeOne: attributeOneValue
+        attributeFive: name.surname@domain.com
+        attributeSeven: 50.05
+        attributeEight: 50
+        isAttributeNine: true
+        attributeTenArray:
+        - attributeTenValueOne
+        - attributeTenValueTwo
+        attributeElevenAmount:
+          amount: 123.45
+          currency: EUR
+    resourceCreationEnquiryResponse:
+      title: resourceCreationEnquiryResponse
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          maxLength: 20
+          pattern: ^[A-Za-z0-9-]
+          description: Resource identifier.
+          example: r3s0urc31d
+        links:
+          $ref: '#/components/schemas/selfLinkObject'
+      description: Resource identifier and link to the details of the resource that
+        has just been created.
+      example:
+        id: r3s0urc31d
+        links:
+          self:
+            href: /resources/{r3s0urc31d}
+
+
+    resourceDetailsEnquiryResponse:
+      title: resourceDetailsEnquiryResponse
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          maxLength: 10
+          pattern: ^[A-Za-z0-9-]
+          description: Resource identifier.
+          example: r3s0urc31d
+        attributeOne:
+          type: string
+          maxLength: 20
+          pattern: ^[A-Za-z0-9- .,]
+          description: Description of the attributeOne.
+          example: attributeOneValue
+        attributeTwoDate:
+          allOf:
+            - $ref: '#/components/schemas/typeDate'
+          description: Description of the attributeTwoDate.
+          example: '2021-09-10'
+        attributeThreeTime:
+          allOf:
+            -  $ref: '#/components/schemas/typeTime'
+          description: Description of the attributeThreeTime.
+          example: 16:22:40Z
+        attributeFourDate:
+          allOf:
+            -  $ref: '#/components/schemas/typeDateTime'
+          description: Description of the attributeFourDate.
+          example: 2019-11-30T16:22:40Z
+        attributeFive:
+          allOf:
+            -  $ref: '#/components/schemas/typeEmail'
+          description: Description of the attributeFive.
+          example: name.last@domain.com
+        attributeSix:
+          allOf:
+            -  $ref: '#/components/schemas/typeURL'
+          description: Description of the attributeSix.
+          example: https://domain.com
+        attributeSeven:
+          type: number
+          description: Description of the attributeSeven.
+          format: float
+          minimum: 0
+          maximum: 100
+          example: 50.05
+        attributeEight:
+          type: integer
+          description: Description of the attributeEight.
+          format: int32
+          minimum: 0
+          maximum: 1000
+          example: 50
+        isAttributeNine:
+          type: boolean
+          description: Description of the isAttributeNine.
+          example: true
+        attributeTenArray:
+          type: array
+          maxItems: 100
+          description: Description of the isAttributeNine
+          example:
+          - attributeTenValueOne
+          - attributeTenValueTwo
+          items:
+            type: string
+            maxLength: 30
+            pattern: ^[A-Za-z0-9]
+            description: Description of the attributeTenArray.
+            example: attributeTenValue
+        attributeElevenAmount:
+          $ref: '#/components/schemas/amountObject'
+      description: Resource Object with all its detailed information.
+      example:
+        id: r3s0urc31d
+        attributeOne: attributeOneValue
+        attributeTwoDate: 2019-11-30
+        attributeThreeTime: 16:22:40Z
+        attributeFourDate: 2019-11-30T16:22:40Z
+        attributeFive: name.surname@domain.com
+        attributeSix: https://domain.com
+        attributeSeven: 50.05
+        attributeEight: 50
+        isAttributeNine: true
+        attributeTenArray:
+        - attributeTenValueOne
+        - attributeTenValueTwo
+        attributeElevenAmount:
+          amount: 123.45
+          currency: EUR
+    resourceDeleteEnquiryResponse:
+      title: resourceDeleteEnquiryResponse
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          maxLength: 6
+          pattern: ^[A-Za-z0-9-]
+          description: Additional Information code.
+          example: OR-001
+        description:
+          type: string
+          maxLength: 1000
+          pattern: ^[A-Za-z0-9- ,.]
+          description: Description of the additional information.
+          example: Orphan Resources
+        level:
+          type: string
+          maxLength: 7
+          pattern: ^[A-Z]
+          description: Level of the additional information.
+          example: WARNING
+          enum:
+          - INFO
+          - WARNING
+        message:
+          type: string
+          maxLength: 1000
+          pattern: ^[A-Za-z0-9 .,-]
+          description: Additional information.
+          example: The deleted resources has left orphan resources to be taken care
+            of.
+      description: Additional information regarding the deletion of a Resource.
+      example:
+        code: OR-001
+        description: Orphan Resources
+        level: WARNING
+        message: The deleted resources has left orphan resources to be taken care
+          of.
+    resourceControllerEnquiryResponse:
+      title: resourceControllerEnquiryResponse
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          maxLength: 2
+          pattern: ^[A-Z]
+          description: Code of the Operation Status (Success / Error = OK / KO)
+          example: KO
+          enum:
+          - OK
+          - KO
+        description:
+          type: string
+          maxLength: 1000
+          pattern: ^[A-Za-z0-9- ,.]
+          description: Description of the additional information.
+          example: Validation Failed
+        level:
+          type: string
+          maxLength: 7
+          pattern: ^[A-Z]
+          description: Level of the additional information.
+          example: WARNING
+          enum:
+          - INFO
+          - WARNING
+        message:
+          type: string
+          maxLength: 1000
+          pattern: ^[A-Za-z0-9 .,\'\-\n\t]
+          description: Additional information.
+          example: The transfer validation failed because the transfers amount is
+            higher than the balance in the origin account.
+      description: Additional information regarding the execution of the controller
+        over the resource.
+      example:
+        code: KO
+        description: Validation Failed
+        level: WARNING
+        message: The transfer validation failed because the transfer's amount is higher
+          than the balance in the origin account.
+
+    selfLinkObject:
+      title: selfLinkObject
+      type: object
+      additionalProperties: false
+      properties:
+        self:
+          type: object
+          additionalProperties: false
+          properties:
+            href:
+              type: string
+              maxLength: 2000
+              pattern: ^[A-Za-z0-9/+:.#?\-_&={}]
+              description: Relative path of the URI of the operation resourceDetailsEnquiry
+                with the resurceId of the response.
+              example: /resources/{resourceId}
+          description: Link to the details of the resource.
+      description: Link to the details of the resource.
+      example:
+        self:
+          href: /resources/{resourceId}
+    paginationLinksObject:
+      title: paginationLinksObject
+      type: object
+      additionalProperties: false
+      properties:
+        limit:
+          type: number
+          description: Number of items in the current page.
+          format: integer
+          example: 20
+          minimum: 1
+          maximum: 100
+        offset:
+          type: number
+          description: Number of items in the current page.
+          format: integer
+          minimum: 0
+          maximum: 2147483647
+          example: 100
+        links:
+          type: object
+          additionalProperties: false
+          description: Relative path of the URI of first page of the operationresourceListEnquiry based on the offset and limit sent in the request.
+          properties:
+            self:
+              type: string
+              maxLength: 2000
+              pattern: ^[A-Za-z0-9/+:.#?\-_&=]
+              description: Relative path of the URI of previous page of the operation  resourceListEnquiry based on the offset and limit sent in the request.Link to the current page of the list of the resources.
+              example: '/resources/?offset=50&limit=50'
+            prev:
+              type: string
+              maxLength: 2000
+              pattern: ^[A-Za-z0-9/+:.#?\-_&=]
+              description: Relative path of the URI of previous page of the operation
+                    resourceListEnquiry based on the offset and limit sent in the request.
+              example: '/resources?limit=20&offset=20'
+            next:
+              type: string
+              maxLength: 2000
+              pattern: ^[A-Za-z0-9/+:.#?\-_&=]
+              description: Relative path of the URI of next page of the operation
+                    resourceListEnquiry based on the offset and limit sent in the request.
+              example: '/resources?limit=20&offset=60'
+            first:
+              type: string
+              maxLength: 2000
+              pattern: ^[A-Za-z0-9/+:.#?\-_&=]
+              description: Link to the first page of the list of the respurces.
+              example: '/resources?limit=20'
+
+
+    amountObject:
+      title: amountObject
+      type: object
+      additionalProperties: false
+      properties:
+        amount:
+          type: number
+          description: Amount.
+          format: float
+          example: 123.45
+          minimum: 0
+          maximum: 999
+        currency:
+          type: string
+          maxLength: 3
+          pattern: ^[A-Z]
+          description: Currency of the Amount.
+          example: EUR
+      description: Standarised object for the amount (amount & currency)
+      example:
+        amount: 123.45
+        currency: EUR
+    errorObject:
+      title: errorObject
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          maxLength: 7
+          pattern: ^[a-z0-9]
+          description: Error code
+          example: "400"
+        title:
+          type: string
+          description: 'Error title'
+          example: 'Bad Request'
+          maxLength: 1000
+        description:
+          type: string
+          maxLength: 100
+          pattern: ^[A-Za-z0-9 .]
+          description: Error description
+          example: Bad Request
+        level:
+          type: string
+          maxLength: 7
+          pattern: ^[A-Z]
+          description: Error level
+          example: ERROR
+          enum:
+          - INFO
+          - ERROR
+          - WARNING
+          - FATAL
+        message:
+          type: string
+          maxLength: 1000
+          pattern: ^[A-Za-z0-9 .,\-()\/\n\t]
+          description: Error message (detailed description)
+          example: Invalid Request. Please, check the data in the request (QueryString
+            Parameters and/or Body).
+        detail:
+          type: string
+          description: 'Error detail'
+          example: 'Invalid Request. Please, check the data in the request (QueryString
+            Parameters and/or Body).'
+          maxLength: 5000
+      description: Error details
+      example:
+        code: "400"
+        description: Bad Request
+        level: ERROR
+        message: Invalid Request. Please, check the data in the request (QueryString
+          Parameters and/or Body).
